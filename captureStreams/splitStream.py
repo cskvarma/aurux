@@ -12,15 +12,19 @@ def splitStream(f,snippetLength,channelId):
        	startTime = datetime.datetime.strptime((f.split(".")[0]).split("_")[1],"%Y-%m-%d-%H:%M:%S");
 	channelName = (f.split(".")[0]).split("_")[0];
 	processed = 0;	
-	print "\nInside split:%s" % (f);
+	print "OutsideWhileLoop:%s" %(f);
         sys.stdout.flush();
 
 	while 1:
+		print "InsideWhileLoop:%s" %(f);
+                sys.stdout.flush();
 		# get the length of the nisppet
 		cmd1 = "ffmpeg -i ../streams/%s 2>&1 " %(f);
 		cmd = cmd1 + " | grep 'Duration' | cut -f1 -d\",\" | cut -f2,3,4 -d\":\" | tr ':' '\t' | awk 'BEGIN{OFS=FS=\"\t\";}{printf \"%.0f\", $1*3600+$2*60+$3}'";
 		status, output = commands.getstatusoutput(cmd);
 		if(output==""):
+			print "Waiting:%d:%s" %(snippetLength,f);
+			sys.stdout.flush();
 			time.sleep(random.random()+snippetLength);
 			continue;
 		duration = int(output);
@@ -40,7 +44,9 @@ def splitStream(f,snippetLength,channelId):
 
 			processed = processed + snippetLength;
 		else:
-			time.sleep(random.random()+(duration-processed));	
+			time.sleep(random.random()+(duration-processed));
+			print "Waiting:%d:%s" %((duration-processed),f);
+                        sys.stdout.flush();	
 	
 	
 	return;
