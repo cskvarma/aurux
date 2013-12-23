@@ -10,12 +10,15 @@ from splitStream import splitStream;
 def captureSingleStream(cmd):
 	os.system(cmd);	
 	return;
-
+def splitStreamCmd(cmd):
+	os.system(cmd);
+	return;
+ 
 if __name__ == "__main__":
 	f = open('./rtmpSources')
 	lines = f.readlines()
 	f.close()
-	snippetLength = 10;
+	snippetLength = 30;
 	for line in lines:
 		# neglect first line in the rtmpSources
 		if (lines.index(line)== 0):
@@ -34,7 +37,9 @@ if __name__ == "__main__":
 		try:
 			print streamName,snippetLength,values[3];
                         thread.start_new_thread( splitStream, (streamName,snippetLength,int(values[3]),));
-                except:
+			#cmd = "./splitStream.py %s %s %s &" %(streamName,snippetLength,values[3]) ;
+                	#thread.start_new_thread( splitStreamCmd, (cmd, ) );
+		except:
                         print "Error: unable to start split thread";
 	while 1:
    		pass

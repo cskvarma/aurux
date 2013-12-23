@@ -5,6 +5,7 @@ D=arg_list{1}; # input file
 f = arg_list{2}; # output file
 s = arg_list{3}; # channelId
 printf ("\n");
+addpath("../computeFP");
 
 pkg load all;
 %function [L,S,T,maxes] = find_landmarks(D,SR,N)
