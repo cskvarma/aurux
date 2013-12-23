@@ -8,4 +8,6 @@
 ffmpeg -i ./streams/etv2_2013-12-23-21\\:48\\:59.mp3 -t 30 -ss 61 part1.mp3\
 ffmpeg -i ./streams/abn_2013-12-23-21\\:49\\:11.mp3 -t 30 -ss 79 part2.mp3\
 \
+ffmpeg -f concat -i mylist.txt -c copy q_2013-12-23-21:50:00.mp3\
+../computeFP/find_landmarks_standAlone.m ./q_2013-12-23-21\\:50\\:00.mp3 q_2013-12-23-21\\:50\\:00.mat 1001\
 }
