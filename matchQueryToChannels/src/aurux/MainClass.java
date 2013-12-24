@@ -39,6 +39,27 @@ public class MainClass {
 		return treemapincl;
 	}
 	
+	private static ArrayList<Integer> smoothWindowByMode(ArrayList<Integer> matchedChannels, int window) {
+		ArrayList<Integer> smoothedMatchedChannels= new ArrayList<Integer>();
+		for (int i= 0;i<matchedChannels.size();i++){
+			  int endIdx = Math.min(i+window,matchedChannels.size()-1);
+			  List<Integer> subList = matchedChannels.subList(i,endIdx);
+			  
+			  int maxFreqElement = -1;
+			  int maxFreq=0;
+			  for(int j=0;j<subList.size();j++){
+				  if (Collections.frequency(subList, subList.get(j)) > maxFreq){
+					  maxFreq = Collections.frequency(subList, subList.get(j));
+					  maxFreqElement = subList.get(j);
+				  }
+			  }//end for j
+			  smoothedMatchedChannels.add(maxFreqElement);
+			  //System.out.println(matchedTimeStamps.get(i)+":"+matchedChannels.get(i));
+			  
+		  }//end for i
+		return smoothedMatchedChannels;
+	}
+	
 	
 	//this function extracts the Date from the filename
 	private static Date getDateFromFileName(String f, int split1, int split2){
@@ -65,6 +86,8 @@ public class MainClass {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		long startTime = System.currentTimeMillis();
+		
 		// TODO Auto-generated method stub
 		int intervalThr = 60; // +/- time diff for files to be considered
 		int snippetLength = 30;// length of each snippet in sec
@@ -156,11 +179,15 @@ public class MainClass {
 	         System.out.println(me.getValue());
 	      }
 		  */
+		  long endTime   = System.currentTimeMillis();
+		  long totalTime = endTime - startTime;
+		  System.out.println("Time:"+totalTime);
 		  
 		  //load the query-File and search for matches
 		  int cntNoMatches = 0;
 		  ArrayList<Integer> matchedChannels= new ArrayList<Integer>();
           ArrayList<Long> matchedTimeStamps= new ArrayList<Long>();
+          ArrayList<Integer> smoothedMatchedChannels= new ArrayList<Integer>();
 		  try {
 	            fis = new FileInputStream(queryPath+queryFile);
 	            reader = new BufferedReader(new InputStreamReader(fis));
@@ -218,14 +245,18 @@ public class MainClass {
 		  
 		  //algo: from the next modeWindow channelIds, pick the one with max-freq.
 		  int modeWindow = 10;
-		  for (int i= 0;i<matchedTimeStamps.size();i++){
-			  //int endIdx = Math.max(i+modeWindow,matchedTimeStamps.size());
-			  //List<Integer> subList = matchedChannels.subList(i,endIdx);
-			  System.out.println(matchedTimeStamps.get(i)+":"+matchedChannels.get(i));
-			  
-		  }//end for i
+		  smoothedMatchedChannels = smoothWindowByMode(matchedChannels, modeWindow);
+		  
+		  for( int i=0;i<matchedChannels.size();i++){
+			  System.out.println(matchedTimeStamps.get(i)+":"+matchedChannels.get(i)+":"+smoothedMatchedChannels.get(i));  
+		  }
+		  
 		  
 		  System.out.println("------DONE------");
+		  
+		  endTime   = System.currentTimeMillis();
+		  totalTime = endTime - startTime;
+		  System.out.println("Time:"+totalTime);
 	}//end void main function
 
 }//end class
