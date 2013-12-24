@@ -211,12 +211,19 @@ public class MainClass {
 		  }//end finally
 		  
 		  System.out.println("#macthes:" + cntNoMatches);
-		  System.out.println(matchedChannels.size() );
-		  System.out.println(matchedTimeStamps.size() );
+		  
 		  
 		  //process the matches + AlgoSplitting
+		  //the timeStamps are sorted as the query-mat file has timestamps in sorted order 
 		  
-		  
+		  //algo: from the next modeWindow channelIds, pick the one with max-freq.
+		  int modeWindow = 10;
+		  for (int i= 0;i<matchedTimeStamps.size();i++){
+			  //int endIdx = Math.max(i+modeWindow,matchedTimeStamps.size());
+			  //List<Integer> subList = matchedChannels.subList(i,endIdx);
+			  System.out.println(matchedTimeStamps.get(i)+":"+matchedChannels.get(i));
+			  
+		  }//end for i
 		  
 		  System.out.println("------DONE------");
 	}//end void main function
