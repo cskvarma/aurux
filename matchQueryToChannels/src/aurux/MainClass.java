@@ -69,7 +69,7 @@ public class MainClass {
 		int intervalThr = 60; // +/- time diff for files to be considered
 		int snippetLength = 30;// length of each snippet in sec
 		double timeQuantInFP = 0.032; //time is quantized in 0.032 sec bins in the FP computation.
-		int fingerPrintThr = 10;//time thr to conisder for matching a finger-print
+		int fingerPrintThrMilliSeconds = 10*1000;//time thr to conisder for matching a finger-print
 		String queryFile = "q_2013-12-23-21:50:00.mat";
 		String queryPath = "../buildQueryForExpt/";
 		Date queryDateTime = getDateFromFileName(queryFile,0,1);
@@ -100,22 +100,26 @@ public class MainClass {
 		  
 		 //Load the validFiles into a hash-Treehash
 		  H = new HashMap<Integer, TreeMap<Long, Integer>>();
+		  int noElemAdded =0;
 		  for (int i=0;i<validFiles.size();i++){
 			  //read the file line by line
 			  try {
 		            fis = new FileInputStream(path+validFiles.get(i));
 		            reader = new BufferedReader(new InputStreamReader(fis));
-		          
-		            System.out.println("Added File :"+validFiles.get(i));
+		            Date fileDateTime = getDateFromFileName(validFiles.get(i),0,2);
+		            
+		            System.out.println(validFiles.get(i));
+		            //System.out.println(fileDateTime.getTime());
 		          
 		            String line = reader.readLine();
 		            while(line != null){
 		               String[] lineSplit = line.split("\\t");
 		               //compute the timeStamp as sum of startime+32 milli-sec*lineSplit[1]
-		               Date fileDateTime = getDateFromFileName(validFiles.get(i),0,2);
 		               long timeStampInUnixMilliSec =  fileDateTime.getTime() + ( 32L * Long.parseLong(lineSplit[1]) );
+		               	//System.out.println(line);
 		                //System.out.println((timeStampInUnixMilliSec));
 		                addToH(new Integer(lineSplit[2]), new Long(timeStampInUnixMilliSec), new Integer(lineSplit[0]));
+		                noElemAdded ++;
 		              
 		                line = reader.readLine();
 		            }//end while           
@@ -136,29 +140,56 @@ public class MainClass {
 			  }//end finally
 			  
 		  }//end for files
+		  System.out.println("# Elements Added:"+noElemAdded);
+		  System.out.println("Size of HashMap:"+H.size());
+		  /*//Debug
+		  System.out.println("Treemap Size for an element (1002233):" + (H.get(1002233)).size());
+		  TreeMap tm = H.get(1002233);
+		  // Get a set of the entries
+	      Set set = tm.entrySet();
+	      // Get an iterator
+	      Iterator i = set.iterator();
+	      // Display elements
+	      while(i.hasNext()) {
+	         Map.Entry me = (Map.Entry)i.next();
+	         System.out.print(me.getKey() + ": ");
+	         System.out.println(me.getValue());
+	      }
+		  */
 		  
 		  //load the query-File and search for matches
 		  int cntNoMatches = 0;
+		  ArrayList<Integer> matchedChannels= new ArrayList<Integer>();
+          ArrayList<Long> matchedTimeStamps= new ArrayList<Long>();
 		  try {
 	            fis = new FileInputStream(queryPath+queryFile);
 	            reader = new BufferedReader(new InputStreamReader(fis));
-	          
+	            Date fileDateTime = getDateFromFileName(queryFile,0,1);
+	            
 	            System.out.println("Query File :" + queryFile);
-	          
+	            System.out.println(fileDateTime.getTime());
 	            String line = reader.readLine();
 	            
-	            while(line != null){
-	               String[] lineSplit = line.split("\\t");
-	               //compute the timeStamp as sum of startime + 32 milli-sec*lineSplit[1]
-	               Date fileDateTime = getDateFromFileName(queryFile,0,1);
-	               long timeStampInUnixMilliSec =  fileDateTime.getTime() + ( 32L * Long.parseLong(lineSplit[1]) );
-	               //extract the subTree within fingerPrintThr window
-	               int hashBkt = new Integer(lineSplit[2]);
-	               SortedMap<Long, Integer> T = extarctRelevantSubTreeMap(new Integer(lineSplit[2]), new Long(timeStampInUnixMilliSec), new Integer(fingerPrintThr));
-	               if((T != null) && (T.size() > 0) ){
-	            	   		System.out.println((T.size()));
-	            	   		
-	            	   		cntNoMatches ++;
+	            
+	            
+	            
+	          while(line != null){
+	            	String[] lineSplit = line.split("\\t");
+	            	//compute the timeStamp as sum of startime + 32 milli-sec*lineSplit[1]
+
+	            	long timeStampInUnixMilliSec =  fileDateTime.getTime() + ( 32L * Long.parseLong(lineSplit[1]) );
+	            	//extract the subTree within fingerPrintThr window
+	            	int hashBkt = new Integer(lineSplit[2]);
+	            	SortedMap<Long, Integer> T = extarctRelevantSubTreeMap(new Integer(lineSplit[2]), new Long(timeStampInUnixMilliSec), new Integer(fingerPrintThrMilliSeconds));
+	            	if((T != null) && (T.size() > 0) ){
+	            		//System.out.println((T.size()));
+	            		//add each Element of T into matchedChannels(value) and matchedTimeStamps(key);
+
+	            		for (Map.Entry<Long, Integer> entry : T.entrySet()) {
+	            			matchedChannels.add(new Integer(entry.getValue()));
+	            			matchedTimeStamps.add(new Long(entry.getKey()));
+	            		}//end for iterator
+	            		cntNoMatches ++;
 	               }
 	               
 	               line = reader.readLine();
@@ -180,7 +211,14 @@ public class MainClass {
 		  }//end finally
 		  
 		  System.out.println("#macthes:" + cntNoMatches);
-	
+		  System.out.println(matchedChannels.size() );
+		  System.out.println(matchedTimeStamps.size() );
+		  
+		  //process the matches + AlgoSplitting
+		  
+		  
+		  
+		  System.out.println("------DONE------");
 	}//end void main function
 
 }//end class
