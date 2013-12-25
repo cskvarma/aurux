@@ -93,7 +93,7 @@ public class MainClass {
 		int snippetLength = 30;// length of each snippet in sec
 		double timeQuantInFP = 0.032; //time is quantized in 0.032 sec bins in the FP computation.
 		int fingerPrintThrMilliSeconds = 10*1000;//time thr to conisder for matching a finger-print
-		String queryFile = "q_2013-12-23-21:50:00.mat";
+		String queryFile = "qMobile_2013-12-23-21:50:00.mat1";//"q_2013-12-23-21:50:00.mat";
 		String queryPath = "../buildQueryForExpt/";
 		Date queryDateTime = getDateFromFileName(queryFile,0,1);
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss");
@@ -186,6 +186,7 @@ public class MainClass {
 		  //load the query-File and search for matches
 		  int cntNoMatches = 0;
 		  ArrayList<Integer> matchedChannels= new ArrayList<Integer>();
+		  ArrayList<Long> queryTimeStamps= new ArrayList<Long>();
           ArrayList<Long> matchedTimeStamps= new ArrayList<Long>();
           ArrayList<Integer> smoothedMatchedChannels= new ArrayList<Integer>();
 		  try {
@@ -215,6 +216,7 @@ public class MainClass {
 	            		for (Map.Entry<Long, Integer> entry : T.entrySet()) {
 	            			matchedChannels.add(new Integer(entry.getValue()));
 	            			matchedTimeStamps.add(new Long(entry.getKey()));
+	            			queryTimeStamps.add(new Long(timeStampInUnixMilliSec));
 	            		}//end for iterator
 	            		cntNoMatches ++;
 	               }
@@ -248,7 +250,9 @@ public class MainClass {
 		  smoothedMatchedChannels = smoothWindowByMode(matchedChannels, modeWindow);
 		  
 		  for( int i=0;i<matchedChannels.size();i++){
-			  System.out.println(matchedTimeStamps.get(i)+":"+matchedChannels.get(i)+":"+smoothedMatchedChannels.get(i));  
+			  Date q = new Date(queryTimeStamps.get(i));
+			  Date c = new Date (matchedTimeStamps.get(i));
+			  System.out.println(q+"|"+c+"|"+matchedChannels.get(i)+"|"+smoothedMatchedChannels.get(i));  
 		  }
 		  
 		  
