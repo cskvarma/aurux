@@ -11,7 +11,6 @@ function [L,S,T,maxes] = find_landmarks(D,SR,N)
 %
 %  REVISED VERSION FINDS PEAKS INCREMENTALLY IN TIME WITH DECAYING THRESHOLD
 % 
-% 2008-12-13 Dan Ellis dpwe@ee.columbia.edu
 
 if nargin < 3;  N = 7;  end % 7 to get a_dec = 0.998
 
