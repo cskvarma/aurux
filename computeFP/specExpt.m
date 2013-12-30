@@ -42,4 +42,9 @@ q_SR=targetSR;
 
 
 % spec
+fft_ms = 64;
+fft_hop = 32;
+nfft = round(targetSR/1000*fft_ms);
+D_S = abs(specgram(D,nfft,targetSR,nfft,nfft-round(targetSR/1000*fft_hop)));
 
+q_S = abs(specgram(q,nfft,targetSR,nfft,nfft-round(targetSR/1000*fft_hop)));
