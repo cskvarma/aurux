@@ -8,6 +8,10 @@ import com.sun.media.sound.FFT;
 
 import java.awt.LinearGradientPaint;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class computeFP {
 
@@ -162,6 +166,30 @@ public class computeFP {
 		return y;
 	}
 	
+	private static void sortDesc(double[] s, double[] v, int[] x ){
+
+		final Integer[] idx = new Integer[s.length];
+		final Double[] data = new Double[s.length];
+		for(int i=0;i<s.length;i++){
+			idx[i]=i;
+			data[i]=s[i];
+		}
+		
+		Arrays.sort(idx, new Comparator<Integer>() {
+		    @Override public int compare(final Integer o1, final Integer o2) {
+		        return Double.compare(data[o1], data[o2]);
+		    }
+		});
+		
+		int n=s.length;
+		for(int i=0;i<s.length;i++){
+			v[i] = s[idx[n-i-1]];
+			x[i] = idx[n-i-1];
+		}
+		
+			
+	}
+	
 	public static void main(String[] args) {
 		//1a.convert mp3 to wav
 		Runtime r = Runtime.getRuntime();
@@ -292,9 +320,11 @@ public class computeFP {
         /*
          // Debug highPass on the matrix
         System.out.println("After HighPass :"+s_highPass.length+","+s_highPass[0].length);
-		for(int i=100;i<110;i++){
-			System.out.println("After HighPass  :"+i+":"+s_highPass[10][i]);
+		for(int i=9360;i<s_highPass.length;i++){
+			System.out.println("After HighPass  :"+i+":"+s_highPass[i][10]);
 		}//end for
+        if(1==1)
+        		return;
         */
         
         /* 
@@ -313,7 +343,7 @@ public class computeFP {
         double ddur = (w_new.getSampleAmplitudes().length)/targetSR;
         int nmaxkeep = (int)Math.round(maxespersec * ddur);
         double [][] maxes = new double[3][nmaxkeep];
-        int nmaxes = 0;
+        int nmaxes = -1;
         int maxix = 0;
         double s_sup=1.0;
         double[] y = locmax(s_highPass[0]);
@@ -348,10 +378,22 @@ public class computeFP {
 		}//end for
         */
         
+        
+        /*
+        //debug sortDesc
+        double[] s123 = {3.1,4.3,5.3,6.5,7.2};
+        double[] v =new double[s123.length];
+        int[] xx = new int[s123.length];
+        sortDesc(s123,v,xx);
+        for(int i=0;i<s123.length;i++)
+        		System.out.println(i+"|"+s123[i]+"|"+v[i]+"|"+xx[i]);
+        		
+        */		
+        
         //4b
-        double[][] T= new double[s_highPass.length][];
+        double[][] T= new double[s_highPass.length][s_highPass[0].length];
         //for i = 1:size(S,2)-1
-        for(int i=0;i<s_highPass.length;i++){
+        for(int i=0;i<s_highPass.length-1;i++){
         		  //s_this = S(:,i);
         		  double[] s_this = new double[s_highPass[0].length];
         		  for(int j=0;j<s_highPass[0].length;j++)
@@ -360,10 +402,10 @@ public class computeFP {
         		  //sdiff = max(0,(s_this - sthresh))';
         		  double[] sdiff = new double[s_highPass[0].length];
         		  for(int j=0;j<sdiff.length;j++){
-        			  if(s_this[j]>sthresh[j])
-        				  sdiff[j] = s_this[j];
+        			  if(s_this[j]-sthresh[j] > 0)
+        				  sdiff[j] = s_this[j]-sthresh[j];
         			  else
-        				  sdiff[j] =sthresh[j];
+        				  sdiff[j] = 0.0;
         		  }
         			
         		  //sdiff = locmax(sdiff);
@@ -393,9 +435,10 @@ public class computeFP {
         		    		if (s_this[p] > sthresh[p]){
         		    			nmaxthistime = nmaxthistime + 1;
         		    			nmaxes = nmaxes + 1;
-        		    			maxes[2][nmaxes] = p;
-        		    			maxes[1][nmaxes] = i;
-        		    			maxes[3][nmaxes] = s_this[p];
+        		    			//System.out.println(p+":"+s_this[p]+":"+nmaxkeep);
+        		    			maxes[1][nmaxes] = p;
+        		    			maxes[0][nmaxes] = i;
+        		    			maxes[2][nmaxes] = s_this[p];
         		    			//eww = exp(-0.5*(([1:length(sthresh)]'- p)/f_sd).^2);
         		    			double[] eww= new double[sthresh.length];
         		    			for(int k=0;k<eww.length;k++){
@@ -410,14 +453,155 @@ public class computeFP {
         		    }//end if
         		  }//end for j
         		  
-        		  T(:,i) = sthresh;
+        		  //T(:,i) = sthresh;
+        		  for(int j=0;j<sthresh.length;j++){
+        			  T[i][j] = sthresh[j];
+        			  //System.out.println(sthresh.length+" T_"+i+"_"+j+":"+T[i][j]);
+        		  }
         		  
         		  //sthresh = a_dec*sthresh;
         		  for(int k=0;k<sthresh.length;k++)
         			  sthresh[k]=sthresh[k]*a_dec;
         }//end for i
+       /* 
+       //Debug
+        System.out.println("nmaxes:"+nmaxes);
+        for(int i=0;i<nmaxes+1;i++){
+        		System.out.println("maxes_3:"+i+":"+maxes[2][i]);
+        }
+       if(1==1)
+    	   	return;
+        */
+        //4c
+        //Backwards pruning of maxes
+        double [][] maxes2 = new double[2][nmaxkeep];
+        int nmaxes2 = -1;
+        int whichmax = nmaxes;
+        
+        //sthresh = s_sup*spread(S(:,end),f_sd)';
+        for(int i=0;i<x.length;i++)
+        		x[i]=s_highPass[s_highPass.length-1][i];
+        	y = spread(x,f_sd);
+        for(int i=0; i<sthresh.length;i++){
+    			sthresh[i] = s_sup*y[i];
+        }
         
         
+        //for i = (size(S,2)-1):-1:1
+        for(int i=s_highPass.length-2;i>=0;i--){
+        		//while whichmax > 0 && maxes(1,whichmax) == i
+        		while(whichmax > 0 && maxes[0][whichmax] == i){
+        			double p = maxes[1][whichmax];
+                double v = maxes[2][whichmax];
+                if  (v >= sthresh[(int)p]){
+                      //% keep this one
+                      nmaxes2 = nmaxes2 + 1;
+                      maxes2[0][nmaxes2] = i;
+                      maxes2[1][nmaxes2] = p;
+                      double[] eww= new double[sthresh.length];
+                      //eww = exp(-0.5*(([1:length(sthresh)]'- p)/f_sd).^2);
+		    			  for(int k=0;k<eww.length;k++){
+		    				eww[k] = Math.exp(-0.5*(k-p)/f_sd*(k-p)/f_sd);
+		    			   }//end k
+                      
+                      //sthresh = max(sthresh, v*s_sup*eww);
+		    			  for(int k=0;k<sthresh.length;k++){
+  		    				if(sthresh[k] < v*s_sup*eww[k])
+  		    					sthresh[k] = v*s_sup*eww[k];
+  		    			}//end for k
+                }//end if
+                    whichmax = whichmax - 1;
+                
+        		}//end while
+        	// sthresh = a_dec*sthresh;
+        	for(int j=0;j<sthresh.length;j++)
+        		sthresh[j]=a_dec*sthresh[j];
+        }//end for i
+        /*
+        //Debug
+         for(int i=0;i<100;i++){
+         	System.out.println("maxes2_3:"+i+":"+maxes2[0][i]+"|"+maxes2[1][i]+"|"+nmaxes2);
+         }
+       */
+       
+        //maxes2 = fliplr(maxes2);
+        int [][] maxes2_fl = new int[2][nmaxes2+1];
+        int ntmp = nmaxes2;
+        for(int i=0;i<nmaxes2+1;i++){
+        		
+        		maxes2_fl[0][i]=(int) maxes2[0][ntmp-i];
+        		maxes2_fl[1][i]=(int) maxes2[1][ntmp-i];
+        }
+       /* 
+       //Debug
+        for(int i=0;i<100;i++){
+        		System.out.println("maxes2fl_3:"+i+":"+maxes2_fl[0][i]+"|"+maxes2_fl[1][i]+"|"+nmaxes2);
+        }
+        */
+        
+        //4c
+        
+        //%% Pack the maxes into nearby pairs = landmarks
+
+        		//% Limit the number of pairs that we'll accept from each peak
+        		int maxpairsperpeak=3;
+
+        		//% Landmark is <starttime F1 endtime F2>
+        		//L = zeros(nmaxes2*maxpairsperpeak,4);
+        		double[][] L= new double[nmaxes2*maxpairsperpeak][4];
+        		int nlmarks = -1;
+
+        		//for i =1:nmaxes2
+        		for(int i=0;i<nmaxes2+1;i++){
+        			if(nlmarks==276){
+          			  System.out.println("Descrepancy");
+          		  }	
+        		  int startt = maxes2_fl[0][i];
+        		  int F1 = maxes2_fl[1][i];
+        		  int maxt = startt + targetdt;
+        		  int  minf = F1 - targetdf;
+        		  int  maxf = F1 + targetdf;
+        		  ArrayList <Integer> matchmaxs = new ArrayList<Integer>();
+        		  //matchmaxs = find((maxes2(1,:)>startt)&(maxes2(1,:)<maxt)&(maxes2(2,:)>minf)&(maxes2(2,:)<maxf));
+        		  for(int j=0;j<nmaxes2+1;j++){
+        			  if( (maxes2_fl[0][j] > startt) && (maxes2_fl[0][j] < maxt) && (maxes2_fl[1][j] > minf) && (maxes2_fl[1][j] < maxf) ){
+        				  matchmaxs.add(j);
+        				  //System.out.println(j);
+        			  }
+        			  		
+        		  }
+        		  System.out.println(i+":"+ matchmaxs.size());
+        		  
+        		  if (matchmaxs.size() > maxpairsperpeak){
+        		    //% limit the number of pairs we make; take first ones, as they
+        		    //% will be closest in time
+        		    //matchmaxs = matchmaxs(1:maxpairsperpeak);
+        			  matchmaxs = new ArrayList <Integer> (matchmaxs.subList(0, maxpairsperpeak));
+        		  }//end if
+        		  //System.out.println(i+":"+ matchmaxs.size());
+        		  
+        		  
+        		  //for match = matchmaxs
+        		  for(int match :matchmaxs){
+        		    nlmarks = nlmarks+1;
+        		    L[nlmarks][0] = startt;
+        		    L[nlmarks][1] = F1;
+        		    L[nlmarks][2] = maxes2_fl[1][match];  //% frequency row
+        		    L[nlmarks][3] = maxes2_fl[0][match]-startt; // % time column difference
+        		  }//end for match
+        		}//end for i
+        		//L = L(1:nlmarks,:);
+        		System.out.println("nlmarks:"+nlmarks);
+        		
+        		//Debug
+        		
+        		for(int i=nlmarks-100;i< nlmarks+1;i++){
+        			System.out.println("FP:"+i+"|"+L[i][0] + "|"+ L[i][1]+"|" + L[i][2]+"|" +L[i][3] );
+        		}
+        		
+        		
+        		
+        System.out.println("Done");
         
         
 	}//end main
