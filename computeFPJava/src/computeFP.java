@@ -29,7 +29,8 @@ public class computeFP {
 	private static int targetdf = 31;
 	private static int targetdt = 63;
 	private static String audioFileName = "/Users/cvarma/TAM/code/tvStreams/audio/aajtak_0_300.mp3";
-	
+	private static String outFile = "/tmp/out.txt";
+	private static int chId = -1;
 	private static double [] locmax(double[] X){
 		double[] Y = new double[X.length];
 		for(int i=0;i<X.length;i++){
@@ -191,7 +192,15 @@ public class computeFP {
 	}
 	
 	public static void main(String[] args) {
+		audioFileName=args[0];
+		outFile=args[1];
+		chId = Integer.parseInt(args[2]);
+		System.out.println("input-file:"+audioFileName);
+		System.out.println("output-file:"+outFile);
+			
 		//1a.convert mp3 to wav
+		
+		/*
 		Runtime r = Runtime.getRuntime();
 		try{
 			String cmd = "/opt/local/bin/mpg123 -q -r 8000 -w  " + " /tmp/resample.wav "+ audioFileName; 
@@ -202,9 +211,10 @@ public class computeFP {
 		catch(Exception ex){
 			System.out.println("Exception:"+ex);
 		}
-			
+		*/	
+		
 		//1b.read wav file into Wave object
-		Wave w = new Wave("/tmp/resample.wav") ;
+		Wave w = new Wave(audioFileName) ;
 		//byte[] b = w.getBytes();
 		WaveHeader wh = w.getWaveHeader();
 		
@@ -553,9 +563,9 @@ public class computeFP {
 
         		//for i =1:nmaxes2
         		for(int i=0;i<nmaxes2+1;i++){
-        			if(nlmarks==276){
+        			/*if(nlmarks==276){
           			  System.out.println("Descrepancy");
-          		  }	
+          		  }*/	
         		  int startt = maxes2_fl[0][i];
         		  int F1 = maxes2_fl[1][i];
         		  int maxt = startt + targetdt;
@@ -570,7 +580,7 @@ public class computeFP {
         			  }
         			  		
         		  }
-        		  System.out.println(i+":"+ matchmaxs.size());
+        		  //System.out.println(i+":"+ matchmaxs.size());
         		  
         		  if (matchmaxs.size() > maxpairsperpeak){
         		    //% limit the number of pairs we make; take first ones, as they
@@ -584,22 +594,72 @@ public class computeFP {
         		  //for match = matchmaxs
         		  for(int match :matchmaxs){
         		    nlmarks = nlmarks+1;
-        		    L[nlmarks][0] = startt;
-        		    L[nlmarks][1] = F1;
-        		    L[nlmarks][2] = maxes2_fl[1][match];  //% frequency row
+        		    L[nlmarks][0] = startt+1;
+        		    L[nlmarks][1] = F1+1;
+        		    L[nlmarks][2] = maxes2_fl[1][match]+1;  //% frequency row
         		    L[nlmarks][3] = maxes2_fl[0][match]-startt; // % time column difference
         		  }//end for match
         		}//end for i
         		//L = L(1:nlmarks,:);
         		System.out.println("nlmarks:"+nlmarks);
         		
+        		/*
         		//Debug
-        		
         		for(int i=nlmarks-100;i< nlmarks+1;i++){
         			System.out.println("FP:"+i+"|"+L[i][0] + "|"+ L[i][1]+"|" + L[i][2]+"|" +L[i][3] );
         		}
+        		*/
         		
+        		//Compute Landmarks out of FP
         		
+        		int[][] H = new int[nlmarks+1][3];
+        		for(int i=0; i<nlmarks+1; i++){
+        			//F1 = rem(round(L(:,2)-1),2^8);
+        			int F1 = (int)L[i][1]-1;
+        			F1= F1%256;
+        			//System.out.println("F1="+F1);
+        			
+        			//DF = round(L(:,3)-L(:,2));
+        			int DF = (int) (L[i][2]-L[i][1]);
+        			//System.out.println("DF="+DF);
+        			//if DF < 0
+        			//  DF = DF + 2^8;
+        			//  end
+        			//if (DF < 0)
+        			//  DF = DF + 256;
+        			
+        			//DF = rem(DF,2^6);
+        			DF = DF%64;
+        			//System.out.println("DF="+DF);
+        			
+        			//DT = rem(abs(round(L(:,4))), 2^6);
+        			int DT = (int) L[i][3];
+        			DT = DT%64;
+        			//System.out.println("DT="+DT);
+        			
+        			//H = [S,H,uint32(F1*(2^12)+DF*(2^6)+DT)];
+        			H[i][0] = chId;
+        			H[i][1] = (int) L[i][0];
+        			H[i][2] = F1*4096+DF*64+DT;
+        			
+        			//Debug
+        			//System.out.println("LM:"+i+"|"+H[i][0]+"|"+H[i][1]+"|" + H[i][2]+"|"+L[i][0] + "|"+ L[i][1]+"|" + L[i][2]+"|" +L[i][3]);
+        		}//end for i LP
+        		
+        		//Write output to file
+        		Writer writer = null;
+
+        		try {
+        		    writer = new BufferedWriter(new OutputStreamWriter(
+        		          new FileOutputStream(outFile), "utf-8"));
+        		    for(int i=0; i<nlmarks+1; i++){
+        		    		writer.write(H[i][0]+"\t"+H[i][1]+"\t"+H[i][2]+"\n");
+        		    }
+        		} catch (IOException ex) {
+        		  // report
+        		} finally {
+        		   try {writer.close();} catch (Exception ex) {}
+        		}
         		
         System.out.println("Done");
         

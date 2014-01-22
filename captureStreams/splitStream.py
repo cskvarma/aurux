@@ -31,14 +31,16 @@ def splitStream(f,snippetLength,channelId):
 		# cut it now into snippetLength chunks if available
 		if (duration-processed >= snippetLength):
 			timeStamp = (startTime+datetime.timedelta(0,processed)).strftime("%Y-%m-%d-%H:%M:%S");
-			snippetFileName = "snippet_%s_%s.mp3" %(channelName,timeStamp); 
-			cmd = "ffmpeg -i ../streams/%s -v 0  -t %s -ss %s ../snippets/%s" %(f,str(snippetLength),str(processed),snippetFileName);
+			snippetFileName = "snippet_%s_%s.wav" %(channelName,timeStamp); 
+			cmd = "ffmpeg -i ../streams/%s -ar 8000 -v 0  -t %s -ss %s ../snippets/%s" %(f,str(snippetLength),str(processed),snippetFileName);
 			os.system(cmd);
 			# now compute fingerprint + hash for the snippet file 
 			#os.chdir('../computeFP/');		
 			fpFileName = "snippet_%s_%s.mat" %(channelName,timeStamp);
-			cmd = "../computeFP/find_landmarks_standAlone.m ../snippets/%s ../fingerprints/%s %s" %(snippetFileName,fpFileName,str(channelId));
-			os.system(cmd);	
+			#cmd = "../computeFP/find_landmarks_standAlone.m ../snippets/%s ../fingerprints/%s %s" %(snippetFileName,fpFileName,str(channelId));
+			#java -jar computeFP.jar /tmp/resample.wav out_H 1002
+            		cmd = "java -jar ../computeFPJava/computeFP.jar ../snippets/%s ../fingerprints/%s %s" %(snippetFileName,fpFileName,str(channelId));
+	          	os.system(cmd);	
 			#os.chdir('../captureStreams/');
 
 
