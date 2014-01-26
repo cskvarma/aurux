@@ -4,10 +4,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -93,7 +97,9 @@ public class MainClass {
 		int snippetLength = 30;// length of each snippet in sec
 		double timeQuantInFP = 0.032; //time is quantized in 0.032 sec bins in the FP computation.
 		int fingerPrintThrMilliSeconds = 10*1000;//time thr to conisder for matching a finger-print
-		String queryFile = "qMobile_2014-01-22-21:15:58.mat";//"qMobile_2013-12-23-21:50:00.mat1";//"q_2013-12-23-21:50:00.mat";
+		String queryFile = args[0];//"qMobile_2014-01-22-21:15:58.mat";//"qMobile_2013-12-23-21:50:00.mat1";//"q_2013-12-23-21:50:00.mat";
+		String outputFile =args[1];
+		String outputFolder="../phpCode/results/";
 		String queryPath = "../buildQueryForExpt/";
 		Date queryDateTime = getDateFromFileName(queryFile,0,1);
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss");
@@ -118,6 +124,7 @@ public class MainClass {
 			  double diffTime = (fileDateTime.getTime()-queryDateTime.getTime())/1000;
 			  if ((Math.abs(diffTime) < intervalThr) || (Math.abs(diffTime) < intervalThr-snippetLength)){
 				  validFiles.add(fileName);
+				  System.out.println("Added:"+fileName);
 			  }//end if
 		  }//end for loop
 		  
@@ -256,7 +263,55 @@ public class MainClass {
 		  }
 		  
 		  
-		  System.out.println("------DONE------");
+		//Write output to file
+      	Writer writer = null;
+
+      	try {
+      		   writer = new BufferedWriter(new OutputStreamWriter(
+      		          new FileOutputStream(outputFolder+outputFile), "utf-8"));
+      		   for(int i=0;i<smoothedMatchedChannels.size()-2;i++){
+      			  if(i==0){
+      				  Date q = new Date(queryTimeStamps.get(i));
+      				  writer.write(q+"\t");
+      			  	}
+      			  if( (smoothedMatchedChannels.get(i+1) != smoothedMatchedChannels.get(i)) || (i==smoothedMatchedChannels.size()-3)){
+      				  Date q = new Date(queryTimeStamps.get(i));
+      				  writer.write(q+"\t"+smoothedMatchedChannels.get(i)+"\n");
+   				  
+      				  q = new Date(queryTimeStamps.get(i+1));
+      				  writer.write(q+"\t");
+      			  }
+      		   }
+      		 }
+      		 catch (IOException ex) {
+      		  // report
+      		} finally {
+      		   try {writer.close();} catch (Exception ex) {}
+      		}
+      	
+      	
+		  System.out.println("\n\nOutput:");
+		  System.out.println("**************");
+		  Date prevDate=null;
+		  for(int i=0;i<smoothedMatchedChannels.size()-2;i++){
+			  if(i==0){
+				  Date q = new Date(queryTimeStamps.get(i));
+				  System.out.print(q+"\t");
+				  prevDate=new Date(queryTimeStamps.get(i));
+			  }
+			  if( (smoothedMatchedChannels.get(i+1) != smoothedMatchedChannels.get(i)) || (i==smoothedMatchedChannels.size()-3)){
+				  Date q = new Date(queryTimeStamps.get(i));
+				  Date q1 = new Date(queryTimeStamps.get(i+1));
+				  double diff = (q1.getTime()-prevDate.getTime())/1000;
+				  System.out.print(q+"\t"+diff+"\t"+smoothedMatchedChannels.get(i)+"\n");
+				  
+				  
+				  System.out.print(q1+"\t");
+				  prevDate=q1;
+			  }
+		  }
+		  
+		  System.out.println("\n\n\n------DONE------");
 		  
 		  endTime   = System.currentTimeMillis();
 		  totalTime = endTime - startTime;

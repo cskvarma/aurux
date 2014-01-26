@@ -196,9 +196,17 @@ public class computeFP {
 	
 	public static int[][] computeFingerPrintFromWave(Wave w){
 
+
+		
+		
+		
+		
 		
 		//byte[] b = w.getBytes();
 		WaveHeader wh = w.getWaveHeader();
+		
+		System.out.println("wave file params:"+w.getNormalizedAmplitudes().length +":" +w.size()+":"+wh.getChannels()+":"+wh.getSampleRate());
+		
 		
 		double d[]=w.getNormalizedAmplitudes();
 		short[] amplitudes=w.getSampleAmplitudes();
@@ -704,9 +712,9 @@ public class computeFP {
 		//1b.read wav file into Wave object
 		Wave w = new Wave(audioFileName) ;
 		
-		WaveHeader wh = w.getWaveHeader();
+		//WaveHeader wh = w.getWaveHeader();
 		
-		System.out.println("wave file params:"+w.getNormalizedAmplitudes().length +":" +w.size()+":"+wh.getChannels()+":"+wh.getSampleRate());
+		//System.out.println("wave file params:"+w.getNormalizedAmplitudes().length +":" +w.size()+":"+wh.getChannels()+":"+wh.getSampleRate());
 		
 		
 		/*
@@ -718,17 +726,82 @@ public class computeFP {
 		Lq = [Lq;find_landmarks(D(round(3*landmarks_hopt/4*SR):end),SR, N)];
 		% add in quarter-hop offsets too for even better recall
 		*/
+		WaveHeader wh = w.getWaveHeader();
+		
+		System.out.println("0 wave file params:"+w.getNormalizedAmplitudes().length +":" +w.size()+":"+wh.getChannels()+":"+wh.getSampleRate());
 		
 		int [][] H1 = computeFingerPrintFromWave(w);
+		//***************************************************//
 		
-		//round(landmarks_hopt/4*SR)= 64;
-		w.leftTrim(64);
+		w = new Wave(audioFileName) ;
+		wh = w.getWaveHeader();
+		//System.out.println("1 wave file params:"+w.getNormalizedAmplitudes().length +":" +w.size()+":"+wh.getChannels()+":"+wh.getSampleRate());
+		
+		short[] amplitudes=w.getSampleAmplitudes();
+		//truncate 64 
+		short[] amplitudesTrunc=null;
+		int idx=0;
+		if (wh.getChannels()==2){
+			amplitudesTrunc= new short [(amplitudes.length-64*2)];
+			
+			for (int i=64*2;i<amplitudes.length;i++){
+				amplitudesTrunc[idx] = (short)((amplitudes[i]));
+				idx++;
+			}//edn for
+		}//end if
+		
+		w.setSampleAmplitudes(amplitudesTrunc);
+		
 		int [][] H2 = computeFingerPrintFromWave(w);
         
-		w.leftTrim(64);
+		//System.out.println("2 wave file params:"+w.getNormalizedAmplitudes().length +":" +w.size()+":"+wh.getChannels()+":"+wh.getSampleRate());
+		
+		//***************************************************//
+		
+		w = new Wave(audioFileName) ;
+		wh = w.getWaveHeader();
+		//System.out.println("1 wave file params:"+w.getNormalizedAmplitudes().length +":" +w.size()+":"+wh.getChannels()+":"+wh.getSampleRate());
+		
+		amplitudes=w.getSampleAmplitudes();
+		//truncate 128 
+		amplitudesTrunc=null;
+		
+		if (wh.getChannels()==2){
+			amplitudesTrunc= new short [(amplitudes.length-128*2)];
+			idx=0;
+			for (int i=128*2;i<amplitudes.length;i++){
+				amplitudesTrunc[idx] = (short)((amplitudes[i]));
+				idx++;
+			}//edn for
+		}//end if
+		
+		w.setSampleAmplitudes(amplitudesTrunc);
+		//w.leftTrim(0.008);
 		int [][] H3 = computeFingerPrintFromWave(w);
 		
-		w.leftTrim(64);
+		//***************************************************//
+		
+		w = new Wave(audioFileName) ;
+		wh = w.getWaveHeader();
+		//System.out.println("1 wave file params:"+w.getNormalizedAmplitudes().length +":" +w.size()+":"+wh.getChannels()+":"+wh.getSampleRate());
+		
+		amplitudes=w.getSampleAmplitudes();
+		//truncate 192 
+		amplitudesTrunc=null;
+		
+		if (wh.getChannels()==2){
+			amplitudesTrunc= new short [(amplitudes.length-192*2)];
+			idx=0;
+			for (int i=192*2;i<amplitudes.length;i++){
+				amplitudesTrunc[idx] = (short)((amplitudes[i]));
+				idx++;
+			}//edn for
+		}//end if
+		
+		w.setSampleAmplitudes(amplitudesTrunc);
+		
+		
+		//w.leftTrim(0.008);
 		int [][] H4 = computeFingerPrintFromWave(w);
 		
 		//find unique landmarks

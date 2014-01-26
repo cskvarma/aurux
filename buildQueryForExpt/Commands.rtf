@@ -15,4 +15,18 @@ ffmpeg -i q_2014-01-22-21\\:15\\:58.mp3 -ar 8000 q_2014-01-22-21\\:15\\:58.wav\
 \
 java -jar ../computeFPJava/computeFP.jar ./q_2014-01-22-21\\:15\\:58.wav  qMobile_2014-01-22-21\\:15\\:58.mat 1002 2\
 \
-}
+java -jar ./matchQueryToChannels.jar qMobile_2014-01-22-21:15:58.mat qMobile_2014-01-22-21:15:58.txt\
+\
+\
+**************\
+rm -rf ../snippets/* ../streams/* ../fingerprints/*\
+\
+**************\
+abn,101,762\
+sakshi,102,746\
+tv5,103,757\
+etv2,104,754\
+timesnow,105,507\
+ntv,106,759\
+hmtv,107,--\
+svbc,108,769}

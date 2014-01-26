@@ -39,7 +39,7 @@ def splitStream(f,snippetLength,channelId):
 			fpFileName = "snippet_%s_%s.mat" %(channelName,timeStamp);
 			#cmd = "../computeFP/find_landmarks_standAlone.m ../snippets/%s ../fingerprints/%s %s" %(snippetFileName,fpFileName,str(channelId));
 			#java -jar computeFP.jar /tmp/resample.wav out_H 1002
-            		cmd = "java -jar ../computeFPJava/computeFP.jar ../snippets/%s ../fingerprints/%s %s" %(snippetFileName,fpFileName,str(channelId));
+            		cmd = "java -jar ../computeFPJava/computeFP.jar ../snippets/%s ../fingerprints/%s %s 1" %(snippetFileName,fpFileName,str(channelId));
 	          	os.system(cmd);	
 			#os.chdir('../captureStreams/');
 
