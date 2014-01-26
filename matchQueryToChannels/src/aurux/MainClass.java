@@ -93,7 +93,7 @@ public class MainClass {
 		int snippetLength = 30;// length of each snippet in sec
 		double timeQuantInFP = 0.032; //time is quantized in 0.032 sec bins in the FP computation.
 		int fingerPrintThrMilliSeconds = 10*1000;//time thr to conisder for matching a finger-print
-		String queryFile = "qMobile_2013-12-23-21:50:00.mat1";//"q_2013-12-23-21:50:00.mat";
+		String queryFile = "qMobile_2014-01-22-21:15:58.mat";//"qMobile_2013-12-23-21:50:00.mat1";//"q_2013-12-23-21:50:00.mat";
 		String queryPath = "../buildQueryForExpt/";
 		Date queryDateTime = getDateFromFileName(queryFile,0,1);
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss");

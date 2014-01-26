@@ -76,6 +76,7 @@ if ismp3 || ism4a || iswav || isrds || isflac
   %disp(['N=',num2str(N),' MONO=',num2str(FORCEMONO),' ds=',num2str(ds)]);
   if ismp3
     [D,SR] = mp3read(FN,N,FORCEMONO,ds);
+    disp(["audioread:", size(D,1), ":",size(D,1)]);
   elseif ism4a
     [D,SR] = m4aread(FN,N,FORCEMONO,ds);
   elseif iswav

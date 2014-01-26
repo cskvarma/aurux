@@ -121,8 +121,9 @@ public class WaveHeader {
 			e.printStackTrace();
 			return false;
 		}
-
+		
 		if (bitsPerSample!=8 && bitsPerSample!=16){
+			System.err.println("bitsPerSample:"+bitsPerSample);
 			System.err.println("WaveHeader: only supports bitsPerSample 8 or 16");			
 			return false;
 		}
