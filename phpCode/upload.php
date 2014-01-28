@@ -17,6 +17,15 @@ if(move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $target_path)) {
 }
 
 //wait for 100 seconds
-wait(100);
-#echo exec('./searchForQuery.sh ');
+/*sleep(10);
+$script = "./searchForQuery.sh " . basename( $_FILES['uploadedfile']['name']); 
+echo "<br>";
+echo $script. "<br>";
+//exec('echo $PATH; whoami; less /etc/paths; 2>&1',$output);
+
+exec($script." 2>&1", $output);
+echo "<pre>";
+var_dump($output);
+echo "</pre>";
+*/
 ?>

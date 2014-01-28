@@ -1,9 +1,9 @@
 # format in TSV: rtmpsource,delay,channelName,channelId
-rtsp://cdn.m.yupptv.tv/liveorigin/abn1	13	abn	101
-rtmp://cdn.m.yupptv.tv/liveorigin/sakshi1	11	sakshi	102
-rtmp://cdn.m.yupptv.tv/liveorigin/tv51	11	tv5	103
-rtmp://cdn.m.yupptv.tv/liveorigin/etv21	13	etv2	104
-rtmp://cdn.m.yupptv.tv/liveorigin/timesnow1	11	timesnow	105
-rtmp://cdn.m.yupptv.tv/liveorigin/ntv1	13	ntv	106
+rtsp://cdn.m.yupptv.tv/liveorigin/abn1	20	abn	101
+rtmp://cdn.m.yupptv.tv/liveorigin/sakshi1	20	sakshi	102
+rtmp://cdn.m.yupptv.tv/liveorigin/tv51	20	tv5	103
+rtmp://cdn.m.yupptv.tv/liveorigin/etv21	20	etv2	104
+rtmp://cdn.m.yupptv.tv/liveorigin/timesnow1	20	timesnow	105
+rtmp://cdn.m.yupptv.tv/liveorigin/ntv1	20	ntv	106
 rtmp://cdn.m.yupptv.tv/liveorigin/hmtv1	0	hmtv	107
 rtmp://cdn.m.yupptv.tv/liveorigin/svbc1	0	svbc	108	 
