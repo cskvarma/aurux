@@ -25,10 +25,10 @@ public class computeFP {
 	private static int fft_ms = 64;
 	private static int fft_hop = 32;
 	private static int N = 7; 
-	private static int f_sd = 10;
-	private static double a_dec = 0.997;
-	private static int maxpksperframe = 10;
-	private static double hpf_pole = 0.98;
+	//private static int f_sd = 10;//10;inv prop to #features
+	//private static double a_dec = 0.997;//0.997; inv prop to #features
+	//private static int maxpksperframe = 10;//10;
+	//private static double hpf_pole = 0.98;
 	private static int targetdf = 31;
 	private static int targetdt = 63;
 	private static String audioFileName = "/Users/cvarma/TAM/code/tvStreams/audio/aajtak_0_300.mp3";
@@ -194,14 +194,8 @@ public class computeFP {
 			
 	}
 	
-	public static int[][] computeFingerPrintFromWave(Wave w){
+	public static int[][] computeFingerPrintFromWave(Wave w,int f_sd, double a_dec, int maxpksperframe,double hpf_pole){
 
-
-		
-		
-		
-		
-		
 		//byte[] b = w.getBytes();
 		WaveHeader wh = w.getWaveHeader();
 		
@@ -351,7 +345,7 @@ public class computeFP {
         
         //4.
 		
-        int maxespersec = 50;//30
+        int maxespersec = 500;//30
         double ddur = (w_new.getSampleAmplitudes().length)/targetSR;
         System.out.println("duration  :"+ddur);
         int nmaxkeep = (int)Math.round(maxespersec * ddur);
@@ -360,7 +354,7 @@ public class computeFP {
         int maxix = 0;
         double s_sup=1.0;
         double[] y = locmax(s_highPass[0]);
-        int f_sd = 10;
+        //int f_sd = 10;
         
         //4a:sthresh = s_sup*spread(max(S(:,1:min(10,size(S,2))),[],2),f_sd)';
         
@@ -677,7 +671,7 @@ public class computeFP {
 		
 		//1b.read wav file into Wave object
 		Wave w = new Wave(audioFileName) ;
-		int [][] H = computeFingerPrintFromWave(w);
+		int [][] H = computeFingerPrintFromWave(w,10,0.997,10,0.98);
         	int nlmarks = H.length;	
 		//Write output to file
         	Writer writer = null;
@@ -707,6 +701,10 @@ public class computeFP {
 		System.out.println("input-file:"+audioFileName);
 		System.out.println("output-file:"+outFile);
 			
+		int f_sd = 10;//10;
+		double a_dec=0.97;//0.97;
+		int maxpksperframe=30;//30;
+		double hpf_pole=0.98;
 		
 		
 		//1b.read wav file into Wave object
@@ -730,7 +728,7 @@ public class computeFP {
 		
 		System.out.println("0 wave file params:"+w.getNormalizedAmplitudes().length +":" +w.size()+":"+wh.getChannels()+":"+wh.getSampleRate());
 		
-		int [][] H1 = computeFingerPrintFromWave(w);
+		int [][] H1 = computeFingerPrintFromWave(w,f_sd,a_dec,maxpksperframe,hpf_pole);
 		//***************************************************//
 		
 		w = new Wave(audioFileName) ;
@@ -752,7 +750,7 @@ public class computeFP {
 		
 		w.setSampleAmplitudes(amplitudesTrunc);
 		
-		int [][] H2 = computeFingerPrintFromWave(w);
+		int [][] H2 = computeFingerPrintFromWave(w,f_sd,a_dec,maxpksperframe,hpf_pole);
         
 		//System.out.println("2 wave file params:"+w.getNormalizedAmplitudes().length +":" +w.size()+":"+wh.getChannels()+":"+wh.getSampleRate());
 		
@@ -777,7 +775,7 @@ public class computeFP {
 		
 		w.setSampleAmplitudes(amplitudesTrunc);
 		//w.leftTrim(0.008);
-		int [][] H3 = computeFingerPrintFromWave(w);
+		int [][] H3 = computeFingerPrintFromWave(w,f_sd,a_dec,maxpksperframe,hpf_pole);
 		
 		//***************************************************//
 		
@@ -802,7 +800,7 @@ public class computeFP {
 		
 		
 		//w.leftTrim(0.008);
-		int [][] H4 = computeFingerPrintFromWave(w);
+		int [][] H4 = computeFingerPrintFromWave(w,f_sd,a_dec,maxpksperframe,hpf_pole);
 		
 		//find unique landmarks
 		HashSet<String> set = new HashSet<String>();
@@ -839,7 +837,8 @@ public class computeFP {
 		   }
 		
 		
-		int nlmarks = H.length;	
+		int nlmarks = H.length;
+		System.out.println("# query landmarks:"+nlmarks);
 		//Write output to file
         	Writer writer = null;
 

@@ -39,7 +39,6 @@ public class MainClass {
 		}
 		Long thr = new Long(fingerPrintThr);
 		treemapincl=T.subMap(timeInUnixMilliSec-thr,timeInUnixMilliSec+thr);
-		
 		return treemapincl;
 	}
 	
@@ -69,6 +68,7 @@ public class MainClass {
 	private static Date getDateFromFileName(String f, int split1, int split2){
 		Date d = null;
 		//obtain the datetime object from queryFileName
+		System.out.println(f);
 		String datetimeStr = f.split("\\.")[split1].split("_")[split2];
 		//System.out.println(datetimeStr);
 				
@@ -114,6 +114,7 @@ public class MainClass {
 		            mode = entry.getKey();
 		        }
 		    }    
+		    System.out.println("----diff-mode-freq:"+maxFreq);
 		    return mode;
 		}
 	
@@ -123,9 +124,9 @@ public class MainClass {
 		ArrayList<Long> qTS=null;
 		ArrayList<Long> mTS=null;
 		long tmp;
-		System.out.println("\n consistentMatches\n***********\n");
+	
 		for(int chID : uniquevalues){
-			System.out.println("chID:"+chID);
+			System.out.println("---chID:"+chID+"---");
 			//get all the queryTimestamps and matchedTimeStamps with this chID
 			qTS= new ArrayList<Long>();
 			mTS = new ArrayList<Long>();
@@ -139,37 +140,53 @@ public class MainClass {
 			
 			//get diff of qTS and mTS
 			Long [] diff = new Long[qTS.size()];
-			for(int i=0;i<diff.length;i++)
+			for(int i=0;i<diff.length;i++){
 				diff[i] = qTS.get(i)-mTS.get(i);
+				System.out.println("-----diff\t"+qTS.get(i)+"\t"+diff[i]);
+			}
+			System.out.println("----#original macthes:"+qTS.size() +"\t"+mTS.size());
 			
 			//get mode
+			//int freq= new Integer(0);
 			Long mode = getMode(diff);
-			System.out.println("mode:"+mode);
-			
+			System.out.println("----diff-mode:"+mode);
+			int thr=1000;
+			System.out.println("----remove all matches in a range of +/-"+thr+" of mode");
 			//remove all elements with (qTS-mTS)>MODE +/- 1000 (i.e., 1 sec)
-			int noMatches=0;
-			for(int i=0;i<matchedChannels.size();i++){
-				if(matchedChannels.get(i)==chID){
-					tmp = queryTimeStamps.get(i)-matchedTimeStamps.get(i);
-					if((tmp >= mode-2000) && (tmp<=mode+2000) ){
-						//System.out.println("matched:"+queryTimeStamps.get(i)+"|"+matchedTimeStamps.get(i));
-						noMatches++;
+			int noValidMatches=0;
+			long startTime= queryTimeStamps.get(0);
+			Iterator<Integer> it1 = matchedChannels.iterator();
+			Iterator<Long> it2 = queryTimeStamps.iterator();
+			Iterator<Long> it3 = matchedTimeStamps.iterator();
+			
+			//for(int i=0;i<matchedChannels.size();i++){
+			while(it1.hasNext()){
+				int mc = it1.next();
+				long qTS1 = it2.next();
+				long mTS1 = it3.next();
+				if(mc==chID){
+					tmp = qTS1-mTS1;//queryTimeStamps.get(i)-matchedTimeStamps.get(i);
+					if((tmp >= mode-thr) && (tmp<=mode+thr) ){
+						double timeFromStart = (double)(qTS1-startTime)/1000.0;
+						//System.out.println("-----matched:"+tmp+"\t"+timeFromStart);
+						noValidMatches++;
 					}
 					else{
-						matchedChannels.remove(i);
-						queryTimeStamps.remove(i);
-						matchedTimeStamps.remove(i);
+						it1.remove();
+						it2.remove();
+						it3.remove();
+						
 					}
 				}//end if
-			}//end for i
-			System.out.println("Summary:"+diff.length+"\t"+noMatches);
-			
+			}//end while
+			System.out.println("----#macthes after removing spurious ones:"+noValidMatches+"\t"+queryTimeStamps.size());
+			/*
 			//if too few matches remove all the matches for a chID
 			if(noMatches < 0.1*diff.length ){
-				
+				System.out.println("---Elimination due to >90% spurious matches "+chID);
 				for(int i=0;i<matchedChannels.size();i++){
 					if(matchedChannels.get(i)==chID){
-							System.out.println("Eliminated "+chID+","+i);
+							
 							matchedChannels.remove(i);
 							queryTimeStamps.remove(i);
 							matchedTimeStamps.remove(i);
@@ -177,6 +194,7 @@ public class MainClass {
 					}//end if
 				}//end for i
 			}//end if 0.1
+			*/
 		}//end for chID
 	}
 		  
@@ -185,6 +203,7 @@ public class MainClass {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		System.out.println("-MatchQueriestoChannels START-");
 		long startTime = System.currentTimeMillis();
 		
 		// TODO Auto-generated method stub
@@ -194,8 +213,8 @@ public class MainClass {
 		int fingerPrintThrMilliSeconds = 30*1000;//time thr to conisder for matching a finger-print
 		String queryFile = args[0];//"qMobile_2014-01-22-21:15:58.mat";//"qMobile_2013-12-23-21:50:00.mat1";//"q_2013-12-23-21:50:00.mat";
 		String outputFile =args[1];
-		String outputFolder="../phpCode/results/";
-		String queryPath = "../buildQueryForExpt/";
+		String outputFolder="../phpCode/results/";//"../expt/";//"../phpCode/results/";
+		String queryPath = "../buildQueryForExpt/";//"../expt/";
 		Date queryDateTime = getDateFromFileName(queryFile,0,1);
 		int queryLength = getLengthFromFileName(queryFile,2);
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss");
@@ -205,17 +224,17 @@ public class MainClass {
 	    
 	    
 		//list the fingerprint files and find the ones that fall with in the required intervalThr
-		  String path = "../fingerprints/"; 
+		  String path = "../fingerprints/";//"../expt/fingerprints/";//; 
 		  String fileName;
 		  File folder = new File(path);
 		  File[] listOfFiles = folder.listFiles(); 
 		  ArrayList<String> validFiles = new ArrayList<String>();
- 				  
+		  System.out.println("--List of files shortlisted--");		  
 		  for (int i = 0; i < listOfFiles.length; i++) 
 		  {	  fileName = listOfFiles[i].getName();
 			  //System.out.println(fileName);
 			  Date fileDateTime = getDateFromFileName(fileName,0,2);
-			  
+			  //System.out.println(fileDateTime);
 			  double diffTime = (fileDateTime.getTime()-queryDateTime.getTime())/1000;
 			  
 			  System.out.println(fileDateTime.getTime()+"|"+queryDateTime.getTime() +"|"+diffTime);
@@ -227,6 +246,7 @@ public class MainClass {
 		  }//end for loop
 		  
 		 //Load the validFiles into a hash-Treehash
+		  System.out.println("--Loading FP in above files to hashMap--");
 		  H = new HashMap<Integer, TreeMap<Long, Integer>>();
 		  int noElemAdded =0;
 		  for (int i=0;i<validFiles.size();i++){
@@ -289,6 +309,7 @@ public class MainClass {
 		  System.out.println("Time:"+totalTime);
 		  
 		  //load the query-File and search for matches
+		  System.out.println("--Matching Query FP-file to Channels-DS--");
 		  int cntNoMatches = 0;
 		  ArrayList<Integer> matchedChannels= new ArrayList<Integer>();
 		  ArrayList<Integer> matchedQueryIndex= new ArrayList<Integer>();
@@ -324,6 +345,7 @@ public class MainClass {
 	            			matchedTimeStamps.add(new Long(entry.getKey()));
 	            			queryTimeStamps.add(new Long(timeStampInUnixMilliSec));
 	            			matchedQueryIndex.add(Integer.parseInt(lineSplit[1]));
+	            			//System.out.println("---matched:"+)
 	            		}//end for iterator
 	            		cntNoMatches ++;
 	            		//System.out.println("matched:"+lineSplit[1]);
@@ -349,17 +371,18 @@ public class MainClass {
 
 		  }//end finally
 		  
-		  System.out.println("#macthes:" + cntNoMatches);
-		/*
+		  System.out.println("#matches:" + cntNoMatches);
+		  long startT = queryTimeStamps.get(0);
 		  for( int i=0;i<matchedChannels.size();i++){
-			  
-			  System.out.println(queryTimeStamps.get(i)+"|"+matchedTimeStamps.get(i)+"|"+matchedQueryIndex.get(i)+"|"+matchedChannels.get(i));  
+			  double diff = (double)(queryTimeStamps.get(i)-startT)/1000;
+			  System.out.println(diff+"\t"+matchedChannels.get(i));  
 		  }
-		  */
+		  
 		  
 		  //Perform cosnistent matching and remove inconsistent matches
+		  System.out.println("--Consistent Matches--");
 		  consistentMatches(queryTimeStamps,matchedTimeStamps,matchedChannels);
-		  
+		  System.out.println("#matches after consistent Matching:" + queryTimeStamps.size());
 		  /*System.out.println("\n After Consistent Matching\n");
 		  
 		  for( int i=0;i<matchedChannels.size();i++){
@@ -372,7 +395,7 @@ public class MainClass {
 		  
 		  //algo: from the next modeWindow channelIds, pick the one with max-freq.
 		  int modeWindow = 10;
-		  smoothedMatchedChannels = matchedChannels;//smoothWindowByMode(matchedChannels, modeWindow);
+		  //smoothedMatchedChannels = matchedChannels;//smoothWindowByMode(matchedChannels, modeWindow);
 		  
 		  
 		  Writer writer = null;
@@ -393,6 +416,140 @@ public class MainClass {
       		} finally {
       		   try {writer.close();} catch (Exception ex) {}
       		}
+		  
+		  
+		  
+		  //print values for each 5 sec window
+		  //long qEnd = queryTimeStamps.get(queryTimeStamps.size()-1)/1000;
+		  int noBuckets  = (int) Math.floor(queryLength/5);
+		  System.out.println("#buckets"+noBuckets);
+		  long startTS = queryTimeStamps.get(0);
+		  for ( int bkt=0;bkt<noBuckets;bkt++){
+			  int min = bkt*5;
+			  int max = (bkt+1)*5;
+			  Map<Integer, Integer> countMap = new HashMap<Integer, Integer>();
+			  for(int i=0;i<queryTimeStamps.size();i++){
+				  long ts =queryTimeStamps.get(i);
+				  int m = (int) ((ts-startTS)/1000);
+				  int chID = matchedChannels.get(i);
+				  if ( (m > min) && (m <= max)){
+					  if (countMap.containsKey(chID)) {
+					        int currentCount = countMap.get(chID);
+					        countMap.put(chID, currentCount + 1);
+					    }
+					    else {
+					        countMap.put(chID, 1);
+					    }
+				  }//end if  max min
+			  }//end i
+			  System.out.print(""+bkt+"\t");
+			  for (int i=101;i<108;i++) {
+				    if(countMap.get(i)==null )
+				    		System.out.print("0\t");
+				    else
+				    	System.out.print(countMap.get(i)+"\t");
+				}
+			  System.out.println();
+				
+		  }//end bkt
+		  
+		  
+		  
+		  //END print values for each 5 sec window
+		  
+		  /*
+		  //remove outliers and non-matched regions
+		  long startTS = queryTimeStamps.get(0);
+		  long prevTS = queryTimeStamps.get(0);
+		  for(int i=0;i<matchedChannels.size();i++){
+			  long ts =queryTimeStamps.get(i);
+			  Date q = new Date(queryTimeStamps.get(i));
+			  int ch = matchedChannels.get(i);
+			  //get all chIDs in the next 5 seconds
+			  List<Integer> arrlist = new ArrayList();
+			  Set<Integer> uniqCh = new HashSet<Integer>();
+			  for(int j=i;j<matchedChannels.size();j++){
+				  long ts1 = queryTimeStamps.get(j);
+				  if((ts1-ts)/1000 < 5){	//5 sec window
+					  arrlist.add(matchedChannels.get(j));
+					  uniqCh.add(matchedChannels.get(j));
+				  }//end if
+			 }//end for j
+			 
+			  //find counts of each chId in the next 5 sec
+			  HashMap hm = new HashMap();
+			  int totalMatches =0; //totalMatches in next 5 sec
+			  for(int chId : uniqCh){
+				 int cnt = Collections.frequency(arrlist,chId);
+				 totalMatches += cnt;
+				  hm.put(chId,cnt);
+			 }
+			  
+			  double time = (double)(ts-startTS)/1000.0;
+			  System.out.println(time+"\t"+ ch+"\t"+totalMatches+"\t"+hm);
+			  
+			  //if there are < 10 matches in the next 5 seconds ignore the record
+			 if (totalMatches <10){
+				 //neglect this record
+				 System.out.println(time+"\t"+ ch+"\t"+totalMatches+"\t"+hm);
+			 }
+			 else{
+			  //else find if a chID is present in more than 70% of the time.
+				 int maxChId = -1;
+				 int maxChIdFreq=-1;
+				 
+				 Set set = hm.entrySet();
+			     Iterator iter = set.iterator();
+			     while(iter.hasNext()) {
+			         Map.Entry me = (Map.Entry)iter.next();
+			         if( ((Integer)me.getValue()) > maxChIdFreq){
+			        	 	maxChId=((Integer)me.getKey());
+			        	 	maxChIdFreq=((Integer)me.getValue());
+			         }//end if
+			         
+			      }//end while
+			     if(maxChIdFreq > 0.8*totalMatches){
+			    	 	long diff = queryTimeStamps.get(i) - prevTS;
+			    	 	
+			    	 	if(diff >4000){
+			    	 		System.out.println("********Transition*************************:"+diff);
+			    	 	}
+			    	 	prevTS = queryTimeStamps.get(i);
+			    	 	System.out.println("**"+q+"\t"+time+"\t"+ maxChId+"\t"+hm );
+			     }
+			     else{
+			    	 	//check if 1st/2nd >2 ?
+			    	 	ArrayList<Integer> chFreqs = new ArrayList<Integer>();
+			    	 	iter = set.iterator();
+			    	 	while(iter.hasNext()) {
+				         Map.Entry me = (Map.Entry)iter.next();
+				         chFreqs.add((Integer)(me.getValue()));
+				     }//end while
+			    	 	Collections.sort(chFreqs);
+			    	 	if(chFreqs.size()>1){
+			    	 		int secondMax = chFreqs.get(chFreqs.size()-2);
+			    	 		if((double)maxChIdFreq/(double)secondMax > 2.0){
+			    	 			long diff = queryTimeStamps.get(i) - prevTS;
+				    	 	
+			    	 			if(diff >4000){
+			    	 				System.out.println("********Transition*************************:"+diff);
+			    	 			}
+			    	 			prevTS = queryTimeStamps.get(i);
+			    	 			System.out.println("**"+q+"\t"+time+"\t"+ maxChId+"\t"+hm );
+			    	 		}
+			    	 		else	 {
+			    	 			System.out.println(time+"\t"+ch +"\t"+totalMatches+"\t"+hm);
+			    	 		}
+			    	 	}//
+			    	 	else{System.out.println(time+"\t"+ch +"\t"+totalMatches+"\t"+hm);}
+			     }
+			    
+			 }//end else
+			 
+			 
+			  
+		  }//end for i
+		  */
 		  
 		 /* 
 		//Write output to file
