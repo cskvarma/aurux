@@ -16,5 +16,5 @@ mv ./$mat ./$mat.$len
 
 #getmatches
 txt="${FILE%%.*}".txt;
-java -jar ../matchQueryToChannels/matchQueryToChannels.jar $mat.$len $txt
+java -jar ../matchQueryToChannels/matchQueryToChannels.jar $mat.$len $txt ../expt/fingerprints/ ../expt/
 

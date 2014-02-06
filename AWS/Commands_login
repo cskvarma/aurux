@@ -1,0 +1,7 @@
+ssh -i varma.pem ubuntu@ec2-54-80-115-182.compute-1.amazonaws.com
+sudo mount /dev/xvdf /mnt/aurux
+
+
+
+
+********* 

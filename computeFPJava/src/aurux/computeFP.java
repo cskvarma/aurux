@@ -194,7 +194,7 @@ public class computeFP {
 			
 	}
 	
-	public static int[][] computeFingerPrintFromWave(Wave w,int f_sd, double a_dec, int maxpksperframe,double hpf_pole){
+	public static int[][] computeFingerPrintFromWave(Wave w,int f_sd, double a_dec, int maxpksperframe,double hpf_pole, int maxpairsperpeak){
 
 		//byte[] b = w.getBytes();
 		WaveHeader wh = w.getWaveHeader();
@@ -307,7 +307,7 @@ public class computeFP {
 		//3b. high pass filter in time-domain: http://stackoverflow.com/questions/8504858/matlabs-filter-in-java
 		
 		double s_highPass[][] = new double [s_d.length][s_d[0].length];
-		double hpfPole = 0.98;
+		//double hpfPole = 0.98;
        // double[] b = new double[]{1,-1};
        // double[] a = new double[]{1, -hpfPole};
         //double[] x = new double[s_d.length];
@@ -318,7 +318,7 @@ public class computeFP {
         		for (int n = 0; n < s_d.length; n++) {
         			x[n]=s_d[n][idx];
         		}//end for n
-        		double[] y = filter(x,hpfPole);
+        		double[] y = filter(x,hpf_pole);
         		for (int n = 0; n < s_d.length; n++) {
         			s_highPass[n][idx]=y[n];
         		}//end for n
@@ -551,7 +551,7 @@ public class computeFP {
         //%% Pack the maxes into nearby pairs = landmarks
 
         		//% Limit the number of pairs that we'll accept from each peak
-        		int maxpairsperpeak=3;
+        		//int maxpairsperpeak=3;
 
         		//% Landmark is <starttime F1 endtime F2>
         		//L = zeros(nmaxes2*maxpairsperpeak,4);
@@ -671,7 +671,7 @@ public class computeFP {
 		
 		//1b.read wav file into Wave object
 		Wave w = new Wave(audioFileName) ;
-		int [][] H = computeFingerPrintFromWave(w,10,0.997,10,0.98);
+		int [][] H = computeFingerPrintFromWave(w,10,0.997,10,0.98,3);
         	int nlmarks = H.length;	
 		//Write output to file
         	Writer writer = null;
@@ -705,6 +705,7 @@ public class computeFP {
 		double a_dec=0.97;//0.97;
 		int maxpksperframe=30;//30;
 		double hpf_pole=0.98;
+		int noNeighborsPerPeak=50;
 		
 		
 		//1b.read wav file into Wave object
@@ -728,7 +729,7 @@ public class computeFP {
 		
 		System.out.println("0 wave file params:"+w.getNormalizedAmplitudes().length +":" +w.size()+":"+wh.getChannels()+":"+wh.getSampleRate());
 		
-		int [][] H1 = computeFingerPrintFromWave(w,f_sd,a_dec,maxpksperframe,hpf_pole);
+		int [][] H1 = computeFingerPrintFromWave(w,f_sd,a_dec,maxpksperframe,hpf_pole,noNeighborsPerPeak);
 		//***************************************************//
 		
 		w = new Wave(audioFileName) ;
@@ -750,7 +751,7 @@ public class computeFP {
 		
 		w.setSampleAmplitudes(amplitudesTrunc);
 		
-		int [][] H2 = computeFingerPrintFromWave(w,f_sd,a_dec,maxpksperframe,hpf_pole);
+		int [][] H2 = computeFingerPrintFromWave(w,f_sd,a_dec,maxpksperframe,hpf_pole,noNeighborsPerPeak);
         
 		//System.out.println("2 wave file params:"+w.getNormalizedAmplitudes().length +":" +w.size()+":"+wh.getChannels()+":"+wh.getSampleRate());
 		
@@ -775,7 +776,7 @@ public class computeFP {
 		
 		w.setSampleAmplitudes(amplitudesTrunc);
 		//w.leftTrim(0.008);
-		int [][] H3 = computeFingerPrintFromWave(w,f_sd,a_dec,maxpksperframe,hpf_pole);
+		int [][] H3 = computeFingerPrintFromWave(w,f_sd,a_dec,maxpksperframe,hpf_pole,noNeighborsPerPeak);
 		
 		//***************************************************//
 		
@@ -800,7 +801,7 @@ public class computeFP {
 		
 		
 		//w.leftTrim(0.008);
-		int [][] H4 = computeFingerPrintFromWave(w,f_sd,a_dec,maxpksperframe,hpf_pole);
+		int [][] H4 = computeFingerPrintFromWave(w,f_sd,a_dec,maxpksperframe,hpf_pole,noNeighborsPerPeak);
 		
 		//find unique landmarks
 		HashSet<String> set = new HashSet<String>();

@@ -164,12 +164,15 @@ public class Spectrogram{
 			//double diff=Math.log10(maxAmp/minAmp);	// perceptual difference
 			for (int i=0; i<numFrames; i++){
 				for (int j=0; j<numFrequencyUnit; j++){
+					spectrogram[i][j]=(Math.log(absoluteSpectrogram[i][j]));
+					/*
 					if (absoluteSpectrogram[i][j]<maxAmp/1e6){
 						spectrogram[i][j]=Math.log(maxAmp/1e6);
 					}
 					else{
 						spectrogram[i][j]=(Math.log(absoluteSpectrogram[i][j]));
 					}
+					*/
 				}
 			}
 			

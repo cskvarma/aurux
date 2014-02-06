@@ -124,7 +124,7 @@ public class MainClass {
 		ArrayList<Long> qTS=null;
 		ArrayList<Long> mTS=null;
 		long tmp;
-	
+		int noValidMatches=0;
 		for(int chID : uniquevalues){
 			System.out.println("---chID:"+chID+"---");
 			//get all the queryTimestamps and matchedTimeStamps with this chID
@@ -153,13 +153,14 @@ public class MainClass {
 			int thr=1000;
 			System.out.println("----remove all matches in a range of +/-"+thr+" of mode");
 			//remove all elements with (qTS-mTS)>MODE +/- 1000 (i.e., 1 sec)
-			int noValidMatches=0;
+			
 			long startTime= queryTimeStamps.get(0);
-			Iterator<Integer> it1 = matchedChannels.iterator();
-			Iterator<Long> it2 = queryTimeStamps.iterator();
-			Iterator<Long> it3 = matchedTimeStamps.iterator();
+			ListIterator<Integer> it1 = matchedChannels.listIterator(); 
+			ListIterator<Long> it2 = queryTimeStamps.listIterator();
+			ListIterator<Long> it3 = matchedTimeStamps.listIterator();
 			
 			//for(int i=0;i<matchedChannels.size();i++){
+			System.out.println("PREV:"+matchedChannels.size());
 			while(it1.hasNext()){
 				int mc = it1.next();
 				long qTS1 = it2.next();
@@ -172,7 +173,9 @@ public class MainClass {
 						noValidMatches++;
 					}
 					else{
+						//System.out.println("1.Cons-Chk:"+matchedChannels.size());
 						it1.remove();
+						//System.out.println("2.Cons-Chk:"+matchedChannels.size());
 						it2.remove();
 						it3.remove();
 						
@@ -196,6 +199,7 @@ public class MainClass {
 			}//end if 0.1
 			*/
 		}//end for chID
+		System.out.println("----Final#macthes after removing spurious ones:"+noValidMatches+"\t"+queryTimeStamps.size());
 	}
 		  
 	
@@ -210,11 +214,11 @@ public class MainClass {
 		int intervalThr = 60; // +/- time diff for files to be considered
 		int snippetLength = 30;// length of each snippet in sec
 		double timeQuantInFP = 0.032; //time is quantized in 0.032 sec bins in the FP computation.
-		int fingerPrintThrMilliSeconds = 30*1000;//time thr to conisder for matching a finger-print
+		int fingerPrintThrMilliSeconds = 10*1000;//time thr to conisder for matching a finger-print
 		String queryFile = args[0];//"qMobile_2014-01-22-21:15:58.mat";//"qMobile_2013-12-23-21:50:00.mat1";//"q_2013-12-23-21:50:00.mat";
 		String outputFile =args[1];
 		String outputFolder="../phpCode/results/";//"../expt/";//"../phpCode/results/";
-		String queryPath = "../buildQueryForExpt/";//"../expt/";
+		String queryPath = args[3];//"../buildQueryForExpt/";//"../expt/";
 		Date queryDateTime = getDateFromFileName(queryFile,0,1);
 		int queryLength = getLengthFromFileName(queryFile,2);
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss");
@@ -224,7 +228,7 @@ public class MainClass {
 	    
 	    
 		//list the fingerprint files and find the ones that fall with in the required intervalThr
-		  String path = "../fingerprints/";//"../expt/fingerprints/";//; 
+		  String path = args[2];//"../fingerprints/";//"../expt/fingerprints/";//; 
 		  String fileName;
 		  File folder = new File(path);
 		  File[] listOfFiles = folder.listFiles(); 
@@ -237,11 +241,11 @@ public class MainClass {
 			  //System.out.println(fileDateTime);
 			  double diffTime = (fileDateTime.getTime()-queryDateTime.getTime())/1000;
 			  
-			  System.out.println(fileDateTime.getTime()+"|"+queryDateTime.getTime() +"|"+diffTime);
+			  System.out.println(fileDateTime.getTime()+"\t"+queryDateTime.getTime() +"\t"+diffTime);
 			  //if ((Math.abs(diffTime) < intervalThr) || (Math.abs(diffTime) < intervalThr-snippetLength)){
 				if( (diffTime >= -1*intervalThr) && (diffTime < (queryLength+intervalThr)) ){ 
 					validFiles.add(fileName);
-					System.out.println("Added:"+fileName);
+					System.out.println("ValidFiles:"+fileName);
 			  }//end if
 		  }//end for loop
 		  
@@ -260,6 +264,7 @@ public class MainClass {
 		            //System.out.println(fileDateTime.getTime());
 		          
 		            String line = reader.readLine();
+		            int noElemAddedPerFile=0;
 		            while(line != null){
 		               String[] lineSplit = line.split("\\t");
 		               //compute the timeStamp as sum of startime+32 milli-sec*lineSplit[1]
@@ -268,10 +273,10 @@ public class MainClass {
 		                //System.out.println((timeStampInUnixMilliSec));
 		                addToH(new Integer(lineSplit[2]), new Long(timeStampInUnixMilliSec), new Integer(lineSplit[0]));
 		                noElemAdded ++;
-		              
+		                noElemAddedPerFile++;
 		                line = reader.readLine();
 		            }//end while           
-		          
+		          System.out.println("Elem Count for "+validFiles.get(i)+"\t"+noElemAddedPerFile);
 		        } //end try
 			  catch (Exception ex) {
 				  System.out.println("Exception in catch: "+ex);
@@ -290,6 +295,7 @@ public class MainClass {
 		  }//end for files
 		  System.out.println("# Elements Added:"+noElemAdded);
 		  System.out.println("Size of HashMap:"+H.size());
+		  
 		  /*//Debug
 		  System.out.println("Treemap Size for an element (1002233):" + (H.get(1002233)).size());
 		  TreeMap tm = H.get(1002233);
@@ -397,7 +403,7 @@ public class MainClass {
 		  int modeWindow = 10;
 		  //smoothedMatchedChannels = matchedChannels;//smoothWindowByMode(matchedChannels, modeWindow);
 		  
-		  
+		  long startQTS = queryTimeStamps.get(0);
 		  Writer writer = null;
 		  try {
      		   writer = new BufferedWriter(new OutputStreamWriter(
@@ -407,7 +413,9 @@ public class MainClass {
      			   Date q = new Date(queryTimeStamps.get(i));
      			   Date c = new Date (matchedTimeStamps.get(i));
      			   //System.out.println(queryTimeStamps.get(i)+"|"+matchedTimeStamps.get(i)+"|"+matchedQueryIndex.get(i)+"|"+matchedChannels.get(i)+"|"+smoothedMatchedChannels.get(i));
-     			  writer.write(q+"\t"+c+"\t"+queryTimeStamps.get(i)+"\t"+matchedChannels.get(i)+"\n");  
+     			  //writer.write(q+"\t"+c+"\t"+queryTimeStamps.get(i)+"\t"+matchedChannels.get(i)+"\n");
+     			  double diff = (double)(queryTimeStamps.get(i)-startQTS)/1000.0;
+     			   writer.write(diff+"\t"+matchedChannels.get(i)+"\n");
 				 
      		   }
 		  }
