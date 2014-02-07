@@ -11,9 +11,6 @@ import random;
 def captureSingleStream(cmd):
 	os.system(cmd);	
 	return;
-def splitStreamCmd(cmd):
-	os.system(cmd);
-	return;
  
 if __name__ == "__main__":
 	f = open('./rtmpSources')

@@ -12,7 +12,7 @@ def splitStream(f,snippetLength,channelId):
        	startTime = datetime.datetime.strptime((f.split(".")[0]).split("_")[1],"%Y-%m-%d-%H:%M:%S");
 	channelName = (f.split(".")[0]).split("_")[0];
 	processed = 0;	
-	print "OutsideWhileLoop:%s" %(f);
+#	print "OutsideWhileLoop:%s" %(f);
         sys.stdout.flush();
 
 	while 1:
@@ -25,10 +25,11 @@ def splitStream(f,snippetLength,channelId):
 		if(output==""):
 			print "Waiting:%d:%s" %(snippetLength,f);
 			sys.stdout.flush();
-			time.sleep(random.random()+snippetLength);
+			#time.sleep(random.random()+snippetLength);
 			continue;
 		duration = int(output);
 		# cut it now into snippetLength chunks if available
+		print "dur,proc,f:"+str(duration)+"\t"+str(processed)+"\t"+f;
 		if (duration-processed >= snippetLength):
 			timeStamp = (startTime+datetime.timedelta(0,processed)).strftime("%Y-%m-%d-%H:%M:%S");
 			snippetFileName = "snippet_%s_%s.wav" %(channelName,timeStamp); 
