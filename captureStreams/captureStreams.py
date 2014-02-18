@@ -26,7 +26,7 @@ if __name__ == "__main__":
 		timeStamp = (datetime.datetime.now()+datetime.timedelta(0,int(values[1]))).strftime("%Y-%m-%d-%H:%M:%S");
 		timeStampsList.append(timeStamp);
 		#capture-thread
-		cmd = "ffmpeg -i %s -v 0 ../streams/%s_%s.mp3 & " %(values[0],values[2],str(timeStamp));
+		cmd = "ffmpeg -i %s -v 0 ../streams/%s_%s.ogg & " %(values[0],values[2],str(timeStamp));
 		try:
    			thread.start_new_thread( captureSingleStream, (cmd, ) );
 		except:
@@ -40,7 +40,7 @@ if __name__ == "__main__":
                         continue;
                 values = line.split('\t');
                 timeStamp = timeStampsList[i]; 
-		streamName = "%s_%s.mp3" %(values[2],str(timeStamp));
+		streamName = "%s_%s.ogg" %(values[2],str(timeStamp));
 		time.sleep(random.random()*30);
 		try:
 			print streamName,snippetLength,values[3];
