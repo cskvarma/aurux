@@ -266,6 +266,8 @@ public class computeFP {
 		double s_d[][] = s.getNormalizedSpectrogramData();
 		double s_d_Abs[][] = s.getAbsoluteSpectrogramData();
 		
+		/*write spectrogram to file */
+		
 		/*
 		System.out.println("Spectrogram :"+s_d_Abs.length+","+s_d_Abs[0].length);
 		for(int i=0;i<10;i++){

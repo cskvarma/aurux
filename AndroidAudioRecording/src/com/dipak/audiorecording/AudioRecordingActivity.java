@@ -14,15 +14,15 @@ import android.widget.Toast;
 
 public class AudioRecordingActivity extends Activity {
 	private static final String AUDIO_RECORDER_FILE_EXT_3GP = ".3gp";
-	private static final String AUDIO_RECORDER_FILE_EXT_MP4 = ".mp4";
+	//private static final String AUDIO_RECORDER_FILE_EXT_MP4 = ".mp4";
 	private static final String AUDIO_RECORDER_FOLDER = "AudioRecorder";
 
 	private MediaRecorder recorder = null;
 	private int currentFormat = 0;
-	private int output_formats[] = { MediaRecorder.OutputFormat.MPEG_4,
-			MediaRecorder.OutputFormat.THREE_GPP };
-	private String file_exts[] = { AUDIO_RECORDER_FILE_EXT_MP4,
-			AUDIO_RECORDER_FILE_EXT_3GP };
+	//private int output_formats[] = { MediaRecorder.OutputFormat.MPEG_4,
+	//		MediaRecorder.OutputFormat.THREE_GPP };
+	//private String file_exts[] = { AUDIO_RECORDER_FILE_EXT_MP4,
+	//		AUDIO_RECORDER_FILE_EXT_3GP };
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -53,7 +53,7 @@ public class AudioRecordingActivity extends Activity {
 	private void setFormatButtonCaption() {
 		((Button) findViewById(R.id.btnFormat))
 				.setText(getString(R.string.audio_format) + " ("
-						+ file_exts[currentFormat] + ")");
+						+ AUDIO_RECORDER_FILE_EXT_3GP + ")");
 	}
 
 	private String getFilename() {
@@ -64,14 +64,14 @@ public class AudioRecordingActivity extends Activity {
 			file.mkdirs();
 		}
 
-		return (file.getAbsolutePath() + "/" + System.currentTimeMillis() + file_exts[currentFormat]);
+		return (file.getAbsolutePath() + "/" + System.currentTimeMillis() + AUDIO_RECORDER_FILE_EXT_3GP);
 	}
 
 	private void startRecording() {
 		recorder = new MediaRecorder();
 
 		recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-		recorder.setOutputFormat(output_formats[currentFormat]);
+		recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 		recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 		recorder.setOutputFile(getFilename());
 
