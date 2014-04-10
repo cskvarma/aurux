@@ -1,3 +1,3 @@
-sox -r 8000 -b 16 -n whiteNoise.wav synth 30  pinknoise pinknoise
-sox -v -0.1 snippet.wav snippet_0_1Vol.wav
+sox -r 8000 -b 16 -c 1 -n whiteNoise.wav synth 30  pinknoise pinknoise
+sox -v -0.1 -c 1 snippet.wav snippet_0_1Vol.wav
 sox -m whiteNoise.wav snippet_0_1Vol.wav snippetNoise.wav

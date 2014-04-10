@@ -102,7 +102,6 @@ end
 fft_ms = 64;
 fft_hop = 32;
 nfft = round(targetSR/1000*fft_ms);
-%nfft=512; nfft-round(targetSR/1000*fft_hop) =  256;
 S = abs(specgram(D,nfft,targetSR,nfft,nfft-round(targetSR/1000*fft_hop)));
 % convert to log domain, and emphasize onsets
 Smax = max(S(:));
